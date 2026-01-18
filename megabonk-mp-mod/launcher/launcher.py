@@ -718,9 +718,100 @@ class LauncherApp:
     
     def build_and_install_mod(self):
         """Build the mod and install it in one go."""
-        def after_build():
-            self.install_mod()
-        self.build_mod(after_build=after_build)
+        game_path = self.game_path_var.get()
+
+        if not game_path or not os.path.exists(game_path):
+            messagebox.showerror("Error", "Please set a valid game path first.")
+            return
+
+        if not self.bepinex_installed.get():
+            messagebox.showerror("Error", "Please install BepInEx first.")
+            return
+
+        def do_build_and_install():
+            try:
+                mod_source = self.get_mod_source_dir()
+
+                # Check if source exists
+                csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
+                if not os.path.exists(csproj_path):
+                    self.log("MegabonkMP.csproj not found. Downloading source first.", "WARNING")
+                    if messagebox.askyesno("Download Required",
+                        "Mod source not found.\n\nWould you like to download it now?"):
+                        self.download_source(lambda: self.build_and_install_mod())
+                    return
+
+                self.log("Building mod...")
+                self.status_var.set("Building mod...")
+
+                # Check dotnet availability
+                try:
+                    result = subprocess.run(["dotnet", "--version"], capture_output=True, text=True)
+                    if result.returncode != 0:
+                        raise FileNotFoundError()
+                except FileNotFoundError:
+                    self.log(".NET SDK not found", "ERROR")
+                    if messagebox.askyesno("Install .NET SDK",
+                                            ".NET SDK is required to build the mod.\n\n"
+                                            "Would you like to open the download page?"):
+                        webbrowser.open("https://dotnet.microsoft.com/download/dotnet/6.0")
+                    return
+
+                # Build the mod
+                result = subprocess.run(
+                    ["dotnet", "build", "-c", "Release", "--verbosity", "minimal"],
+                    cwd=mod_source,
+                    capture_output=True,
+                    text=True
+                )
+
+                if result.returncode != 0:
+                    self.log(f"Build failed: {result.stderr}", "ERROR")
+                    self.status_var.set("Build failed")
+                    messagebox.showerror("Build Failed", f"Failed to build mod:\n\n{result.stderr}")
+                    return
+
+                self.log("Mod built successfully, installing...")
+                self.status_var.set("Installing mod...")
+
+                # Now install the built mod
+                mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
+                os.makedirs(mod_dest, exist_ok=True)
+
+                # Look for the built DLL
+                dll_paths = [
+                    os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
+                ]
+
+                dll_found = None
+                for dll_path in dll_paths:
+                    if os.path.exists(dll_path):
+                        dll_found = dll_path
+                        break
+
+                if dll_found:
+                    dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+                    shutil.copy2(dll_found, dest_dll)
+                    self.log(f"Mod installed successfully: {dest_dll}")
+                    self.status_var.set("Mod installed successfully!")
+                    messagebox.showinfo("Success", f"Mod built and installed successfully!\n\n{dest_dll}")
+                else:
+                    self.log("Mod DLL not found after build", "ERROR")
+                    self.status_var.set("Installation failed")
+                    messagebox.showerror("Installation Failed", "Mod was built but DLL file not found.")
+
+            except Exception as e:
+                self.log(f"Build/install failed: {e}", "ERROR")
+                self.status_var.set("Build/install failed")
+                messagebox.showerror("Error", f"Failed to build and install mod:\n{e}")
+
+            # Update status regardless
+            self.check_installation_status()
+
+        threading.Thread(target=do_build_and_install, daemon=True).start()
 
     def build_mod(self, after_build=None):
         """Build the mod from source. Calls after_build() on success if provided."""
