@@ -79,8 +79,8 @@
   <!-- Fallback: BepInEx Unity stubs when game path not available -->
   <ItemGroup Condition="'$(MEGABONK_PATH)' == '' OR !Exists('$(MEGABONK_PATH)\BepInEx\interop')">
     <PackageReference Include="BepInEx.Unity" Version="6.0.0-pre.1" IncludeAssets="compile" />
-    <PackageReference Include="UnityEngine.UI" Version="5.6.1" IncludeAssets="compile" />
-    <Reference Include="UnityEngine.UI" HintPath="$(NuGetPackageRoot)unityengine.ui\5.6.1\lib\netstandard2.0\UnityEngine.UI.dll" />
+    <PackageReference Include="AssetRipper.UnityEngine.UIModule" Version="5.6.1" IncludeAssets="compile" />
+    <Reference Include="UnityEngine.UI" HintPath="$(NuGetPackageRoot)assetripper.unityengine.uimodule\5.6.1\lib\netstandard2.0\UnityEngine.UIModule.dll" />
   </ItemGroup>
 
 </Project>
