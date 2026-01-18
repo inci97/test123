@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Attributes;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
@@ -402,12 +403,34 @@ namespace MegabonkMP.UI
             
             var button = obj.AddComponent<Button>();
             button.targetGraphic = image;
-            button.onClick.AddListener((UnityEngine.Events.UnityAction)(() => onClick?.Invoke()));
+            
+            // Store callback in a component to avoid IL2CPP lambda issues
+            var handler = obj.AddComponent<ButtonClickHandler>();
+            handler.SetCallback(onClick);
+            button.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction>(handler.OnClick));
             
             var rect = obj.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(120, 35);
             
             return button;
+        }
+    }
+    
+    /// <summary>
+    /// Helper component to store button click callbacks for IL2CPP compatibility.
+    /// </summary>
+    public class ButtonClickHandler : MonoBehaviour
+    {
+        private Action _callback;
+        
+        public void SetCallback(Action callback)
+        {
+            _callback = callback;
+        }
+        
+        public void OnClick()
+        {
+            _callback?.Invoke();
         }
     }
 }

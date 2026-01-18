@@ -307,11 +307,33 @@ namespace MegabonkMP.UI
             
             var button = obj.AddComponent<Button>();
             button.targetGraphic = image;
-            button.onClick.AddListener((UnityEngine.Events.UnityAction)(() => onClick?.Invoke()));
+            
+            // Store callback in a component to avoid IL2CPP lambda issues
+            var handler = obj.AddComponent<SettingsButtonHandler>();
+            handler.SetCallback(onClick);
+            button.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction>(handler.OnClick));
             
             obj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 30);
             
             return button;
+        }
+    }
+    
+    /// <summary>
+    /// Helper component to store button click callbacks for IL2CPP compatibility.
+    /// </summary>
+    public class SettingsButtonHandler : MonoBehaviour
+    {
+        private System.Action _callback;
+        
+        public void SetCallback(System.Action callback)
+        {
+            _callback = callback;
+        }
+        
+        public void OnClick()
+        {
+            _callback?.Invoke();
         }
     }
 }
