@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
 
@@ -134,7 +133,7 @@ namespace MegabonkMP.UI
             _networkStatsToggle = CreateToggle("Show Network Stats", false);
             _networkStatsToggle.transform.SetParent(_settingsPanel.transform, false);
             _networkStatsToggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, yPos);
-            _networkStatsToggle.onValueChanged.AddListener(new UnityAction<bool>(OnNetworkStatsToggled));
+            _networkStatsToggle.onValueChanged.AddListener((Il2CppSystem.Action<bool>)OnNetworkStatsToggled);
             
             // Close button
             var closeBtn = CreateButton("Close", Close);
