@@ -22,6 +22,7 @@
   <!-- NuGet packages for BepInEx -->
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.752" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.Unity.Common" Version="6.0.0-be.752" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
   </ItemGroup>
 
