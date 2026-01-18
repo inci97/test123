@@ -31,12 +31,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
+      - name: Create release directory
+        run: |
+          New-Item -ItemType Directory -Force -Path release
+
       - name: Build Mod DLL
         working-directory: megabonk-mp-mod/src
         run: |
+          # Build without MEGABONK_PATH for CI - will use default output path
           dotnet build -c Release --verbosity minimal
           if (Test-Path "bin/Release/MegabonkMP.dll") {
             Copy-Item "bin/Release/MegabonkMP.dll" "../../release/MegabonkMP.dll"
+            Write-Host "Mod DLL built successfully"
+          } else {
+            Write-Error "Mod DLL not found after build"
+            exit 1
           }
 
       - name: Build EXE
@@ -112,7 +121,5 @@ jobs:
           files: |
             ./release/MegabonkMP_Launcher.exe
             ./release/MegabonkMP.dll
-          files: |
-            ./release/MegabonkMP_Launcher.exe
           draft: false
           prerelease: false

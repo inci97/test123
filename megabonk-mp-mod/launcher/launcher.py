@@ -174,15 +174,6 @@ class LauncherApp:
         self.create_main_tab()
         self.create_settings_tab()
         self.create_log_tab()
-        
-        def create_main_tab(self):
-        status_frame = ttk.Frame(self.root)
-        status_frame.pack(fill=tk.X, padx=5, pady=2)
-        
-        ttk.Label(status_frame, textvariable=self.status_var).pack(side=tk.LEFT)
-        
-        # Version label
-        ttk.Label(status_frame, text=f"v{APP_VERSION}").pack(side=tk.RIGHT)
     
     def create_main_tab(self):
         """Create the main/launch tab"""
@@ -207,13 +198,12 @@ class LauncherApp:
         # Installation Status
         status_frame = ttk.LabelFrame(main_frame, text="Installation Status", padding=10)
         status_frame.pack(fill=tk.X, pady=5)
-            self.build_and_install_btn = ttk.Button(install_frame, text="Build && Install Mod", 
-                                             command=self.build_and_install_mod)
-            self.build_and_install_btn.pack(side=tk.LEFT, padx=5)
+        
+        self.bepinex_status = ttk.Label(status_frame, text="⬜ BepInEx not installed")
+        self.bepinex_status.pack(anchor=tk.W)
         
         self.mod_status = ttk.Label(status_frame, text="⬜ Mod not installed")
         self.mod_status.pack(anchor=tk.W)
-            # Removed separate install button
         
         # Install Buttons - Row 1
         install_frame = ttk.Frame(status_frame)
@@ -227,9 +217,14 @@ class LauncherApp:
                                                command=self.download_source)
         self.download_source_btn.pack(side=tk.LEFT, padx=5)
         
-        self.build_mod_btn = ttk.Button(install_frame, text="Build Mod", 
-                                         command=self.build_mod)
-
+        # Install Buttons - Row 2
+        install_frame2 = ttk.Frame(status_frame)
+        install_frame2.pack(fill=tk.X, pady=5)
+        
+        self.build_and_install_btn = ttk.Button(install_frame2, text="Build && Install Mod", 
+                                                 command=self.build_and_install_mod)
+        self.build_and_install_btn.pack(side=tk.LEFT, padx=5)
+        
         self.install_mod_btn = ttk.Button(install_frame2, text="Install/Update Mod", 
                                            command=self.install_mod)
         self.install_mod_btn.pack(side=tk.LEFT, padx=5)
@@ -474,27 +469,28 @@ class LauncherApp:
         # Check Source (independent of game path)
         mod_source = self.get_mod_source_dir()
         csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
-                # Check if mod DLL is latest built version
-                mod_source = self.get_mod_source_dir()
-                built_dll = os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll")
-                if os.path.exists(mod_dll):
-                    is_latest = False
-                    if os.path.exists(built_dll):
-                        try:
-                            mod_time = os.path.getmtime(mod_dll)
-                            built_time = os.path.getmtime(built_dll)
-                            is_latest = mod_time >= built_time
-                        except Exception:
-                            pass
-                    if is_latest:
-                        self.mod_status.config(text="✅ MegabonkMP mod installed (latest)")
-                    else:
-                        self.mod_status.config(text="⚠️ MegabonkMP mod installed (outdated)")
-                    self.mod_installed.set(True)
-                    self.log("MegabonkMP mod found")
-                else:
-                    self.mod_status.config(text="❌ MegabonkMP mod not installed")
-                    self.mod_installed.set(False)
+        
+        # Check if mod DLL is latest built version
+        mod_source = self.get_mod_source_dir()
+        built_dll = os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll")
+        if os.path.exists(mod_dll):
+            is_latest = False
+            if os.path.exists(built_dll):
+                try:
+                    mod_time = os.path.getmtime(mod_dll)
+                    built_time = os.path.getmtime(built_dll)
+                    is_latest = mod_time >= built_time
+                except Exception:
+                    pass
+            if is_latest:
+                self.mod_status.config(text="✅ MegabonkMP mod installed (latest)")
+            else:
+                self.mod_status.config(text="⚠️ MegabonkMP mod installed (outdated)")
+            self.mod_installed.set(True)
+            self.log("MegabonkMP mod found")
+        else:
+            self.mod_status.config(text="❌ MegabonkMP mod not installed")
+            self.mod_installed.set(False)
     def install_bepinex(self):
         """Download and install BepInEx"""
         game_path = self.game_path_var.get()
@@ -741,55 +737,53 @@ class LauncherApp:
             return
         
         def do_build():
-        mod_source = self.get_mod_source_dir()
-        
-        # Mod destination
-        mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
-        
-        try:
-            os.makedirs(mod_dest, exist_ok=True)
+            mod_source = self.get_mod_source_dir()
             
-                    if after_build:
-                        self.root.after(0, after_build)
-            # First check if DLL was already built to the destination
-            dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
-            if os.path.exists(dest_dll):
-                self.log(f"Mod DLL already present at destination: {dest_dll}")
-                messagebox.showinfo("Success", f"Mod is already installed!\n\n{dest_dll}")
-                self.check_installation_status()
-                return
+            # Mod destination
+            mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
             
-            # Look for compiled DLL in build output locations
-            dll_paths = [
-                os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
-                os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
-                os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
-                os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
-            ]
-            
-            dll_found = None
-            for dll_path in dll_paths:
-                if os.path.exists(dll_path):
-                    dll_found = dll_path
-                    break
-            
-            if dll_found:
+            try:
+                os.makedirs(mod_dest, exist_ok=True)
+                
+                # First check if DLL was already built to the destination
                 dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
-                shutil.copy2(dll_found, dest_dll)
-                self.log(f"Mod DLL copied from {dll_found} to {dest_dll}")
-                messagebox.showinfo("Success", f"Mod installed successfully!\n\n{dest_dll}")
-            else:
-                self.log("Mod DLL not found. Please build the mod first.", "WARNING")
-                if messagebox.askyesno("Build Required", 
-                    "Mod DLL not found.\n\nWould you like to build the mod now?"):
-                    self.build_mod()
-                return
-            
-            self.check_installation_status()
-            
-        except Exception as e:
-            self.log(f"Failed to install mod: {e}", "ERROR")
-            messagebox.showerror("Error", f"Failed to install mod:\n{e}")
+                if os.path.exists(dest_dll):
+                    self.log(f"Mod DLL already present at destination: {dest_dll}")
+                    messagebox.showinfo("Success", f"Mod is already installed!\n\n{dest_dll}")
+                    self.check_installation_status()
+                    return
+                
+                # Look for compiled DLL in build output locations
+                dll_paths = [
+                    os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
+                ]
+                
+                dll_found = None
+                for dll_path in dll_paths:
+                    if os.path.exists(dll_path):
+                        dll_found = dll_path
+                        break
+                
+                if dll_found:
+                    dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+                    shutil.copy2(dll_found, dest_dll)
+                    self.log(f"Mod DLL copied from {dll_found} to {dest_dll}")
+                    messagebox.showinfo("Success", f"Mod installed successfully!\n\n{dest_dll}")
+                else:
+                    self.log("Mod DLL not found. Please build the mod first.", "WARNING")
+                    if messagebox.askyesno("Build Required", 
+                        "Mod DLL not found.\n\nWould you like to build the mod now?"):
+                        self.build_mod()
+                    return
+                
+                self.check_installation_status()
+                
+            except Exception as e:
+                self.log(f"Failed to install mod: {e}", "ERROR")
+                messagebox.showerror("Error", f"Failed to install mod:\n{e}")
     
     def apply_server_settings(self):
         """Apply and save server settings to mod config"""
