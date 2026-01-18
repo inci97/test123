@@ -1,0 +1,42 @@
+# Build outputs
+**/bin/
+**/obj/
+**/dist/
+**/build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Config files
+launcher/launcher_config.json
+
+# Temporary files
+*.tmp
+*.temp
+
+# BepInEx generated files
+BepInEx/
+doorstop_config.ini
+
+# Unity
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+
+# Package manager
+node_modules/
+package-lock.json

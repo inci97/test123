@@ -1,0 +1,14 @@
+{
+  "name": "MegabonkMP",
+  "version": "0.1.0",
+  "description": "Multiplayer mod for Megabonk",
+  "author": "Ved (game), inci97 (mod)",
+  "dependencies": {
+    "BepInEx-IL2CPP": "6.0.0-pre.2"
+  },
+  "scripts": {
+    "build": "dotnet build -c Release",
+    "clean": "dotnet clean",
+    "restore": "dotnet restore"
+  }
+}

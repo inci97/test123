@@ -172,11 +172,10 @@ class LauncherApp:
         
         # Create tabs
         self.create_main_tab()
-        self.create_server_tab()
         self.create_settings_tab()
         self.create_log_tab()
         
-        # Status bar
+        def create_main_tab(self):
         status_frame = ttk.Frame(self.root)
         status_frame.pack(fill=tk.X, padx=5, pady=2)
         
@@ -208,15 +207,13 @@ class LauncherApp:
         # Installation Status
         status_frame = ttk.LabelFrame(main_frame, text="Installation Status", padding=10)
         status_frame.pack(fill=tk.X, pady=5)
-        
-        self.bepinex_status = ttk.Label(status_frame, text="⬜ BepInEx not installed")
-        self.bepinex_status.pack(anchor=tk.W)
+            self.build_and_install_btn = ttk.Button(install_frame, text="Build && Install Mod", 
+                                             command=self.build_and_install_mod)
+            self.build_and_install_btn.pack(side=tk.LEFT, padx=5)
         
         self.mod_status = ttk.Label(status_frame, text="⬜ Mod not installed")
         self.mod_status.pack(anchor=tk.W)
-        
-        self.source_status = ttk.Label(status_frame, text="⬜ Source not downloaded")
-        self.source_status.pack(anchor=tk.W)
+            # Removed separate install button
         
         # Install Buttons - Row 1
         install_frame = ttk.Frame(status_frame)
@@ -232,12 +229,7 @@ class LauncherApp:
         
         self.build_mod_btn = ttk.Button(install_frame, text="Build Mod", 
                                          command=self.build_mod)
-        self.build_mod_btn.pack(side=tk.LEFT, padx=5)
-        
-        # Install Buttons - Row 2
-        install_frame2 = ttk.Frame(status_frame)
-        install_frame2.pack(fill=tk.X, pady=5)
-        
+
         self.install_mod_btn = ttk.Button(install_frame2, text="Install/Update Mod", 
                                            command=self.install_mod)
         self.install_mod_btn.pack(side=tk.LEFT, padx=5)
@@ -482,13 +474,27 @@ class LauncherApp:
         # Check Source (independent of game path)
         mod_source = self.get_mod_source_dir()
         csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
-        
-        if os.path.exists(csproj_path):
-            self.source_status.config(text="✅ Source files available")
-            self.log(f"Source found at: {mod_source}")
-        else:
-            self.source_status.config(text="❌ Source not downloaded")
-    
+                # Check if mod DLL is latest built version
+                mod_source = self.get_mod_source_dir()
+                built_dll = os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll")
+                if os.path.exists(mod_dll):
+                    is_latest = False
+                    if os.path.exists(built_dll):
+                        try:
+                            mod_time = os.path.getmtime(mod_dll)
+                            built_time = os.path.getmtime(built_dll)
+                            is_latest = mod_time >= built_time
+                        except Exception:
+                            pass
+                    if is_latest:
+                        self.mod_status.config(text="✅ MegabonkMP mod installed (latest)")
+                    else:
+                        self.mod_status.config(text="⚠️ MegabonkMP mod installed (outdated)")
+                    self.mod_installed.set(True)
+                    self.log("MegabonkMP mod found")
+                else:
+                    self.mod_status.config(text="❌ MegabonkMP mod not installed")
+                    self.mod_installed.set(False)
     def install_bepinex(self):
         """Download and install BepInEx"""
         game_path = self.game_path_var.get()
@@ -610,8 +616,8 @@ class LauncherApp:
         
         threading.Thread(target=do_download, daemon=True).start()
     
-    def build_mod(self):
-        """Build the mod from source"""
+    def build_mod(self, after_build=None):
+        """Build the mod from source. Calls after_build() on success if provided."""
         game_path = self.game_path_var.get()
         
         if not self.bepinex_installed.get():
@@ -700,6 +706,8 @@ class LauncherApp:
                     self.root.after(0, lambda: messagebox.showinfo("Success", 
                         f"Mod built successfully!\n\nDLL: {dll_found}\n\n"
                         "Click 'Install/Update Mod' to copy it to BepInEx plugins."))
+                    if after_build:
+                        self.root.after(0, after_build)
                 else:
                     self.log("Build completed but DLL not found", "WARNING")
                     self.root.after(0, lambda: self.status_var.set("Build complete"))
@@ -712,15 +720,27 @@ class LauncherApp:
         
         threading.Thread(target=do_build, daemon=True).start()
     
-    def install_mod(self):
-        """Install/update the mod"""
+    def build_and_install_mod(self):
+        """Build the mod and install it in one go."""
+        def after_build():
+            self.install_mod()
+        self.build_mod(after_build=after_build)
+    
+    def build_and_install_mod(self):
+        """Build the mod and install it in one go."""
+        def after_build():
+            self.install_mod()
+        self.build_mod(after_build=after_build)
+
+    def build_mod(self, after_build=None):
+        """Build the mod from source. Calls after_build() on success if provided."""
         game_path = self.game_path_var.get()
         
         if not self.bepinex_installed.get():
             messagebox.showerror("Error", "Please install BepInEx first.")
             return
         
-        # Get mod source directory
+        def do_build():
         mod_source = self.get_mod_source_dir()
         
         # Mod destination
@@ -729,6 +749,8 @@ class LauncherApp:
         try:
             os.makedirs(mod_dest, exist_ok=True)
             
+                    if after_build:
+                        self.root.after(0, after_build)
             # First check if DLL was already built to the destination
             dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
             if os.path.exists(dest_dll):

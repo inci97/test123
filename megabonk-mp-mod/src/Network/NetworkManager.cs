@@ -105,7 +105,25 @@ namespace MegabonkMP.Network
                 ModLogger.Warning("Already connected, disconnect first");
                 return;
             }
-            
+
+            // Validate parameters
+            if (string.IsNullOrEmpty(address?.Trim()))
+            {
+                ModLogger.Error("Server address cannot be empty");
+                return;
+            }
+
+            if (port < 1024 || port > 65535)
+            {
+                ModLogger.Error($"Invalid port number: {port} (must be 1024-65535)");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(playerName?.Trim()))
+            {
+                playerName = "Player";
+            }
+
             try
             {
                 IsHost = false;
@@ -113,15 +131,16 @@ namespace MegabonkMP.Network
                 _client.OnConnected += HandleClientConnectedToServer;
                 _client.OnDisconnected += HandleClientDisconnectedFromServer;
                 _client.OnPacketReceived += HandleClientPacketReceived;
-                
+
                 SetConnectionState(ConnectionState.Connecting);
-                _client.Connect(address, port, playerName);
-                ModLogger.Info($"Connecting to {address}:{port}");
+                _client.Connect(address.Trim(), port, playerName.Trim());
+                ModLogger.Info($"Connecting to {address.Trim()}:{port}");
             }
             catch (Exception ex)
             {
-                ModLogger.Error("Failed to connect", ex);
+                ModLogger.Error($"Failed to connect: {ex.Message}");
                 Shutdown();
+                throw;
             }
         }
         

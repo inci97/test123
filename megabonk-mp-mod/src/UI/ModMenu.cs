@@ -54,14 +54,28 @@ namespace MegabonkMP.UI
         
         public static void Initialize()
         {
-            if (_instance != null) return;
-            
-            var go = new GameObject("MegabonkMP_ModMenu");
-            Object.DontDestroyOnLoad(go);
-            go.hideFlags = HideFlags.HideAndDontSave;
-            _instance = go.AddComponent<ModMenu>();
-            
-            ModLogger.Info("Mod menu initialized - Press F9 to open");
+            if (_instance != null)
+            {
+                ModLogger.Debug("ModMenu.Initialize called but instance already exists");
+                return;
+            }
+
+            try
+            {
+                var go = new GameObject("MegabonkMP_ModMenu");
+                Object.DontDestroyOnLoad(go);
+                go.hideFlags = HideFlags.HideAndDontSave;
+                _instance = go.AddComponent<ModMenu>();
+
+                // Load settings immediately
+                _instance.LoadSettings();
+
+                ModLogger.Info("Mod menu initialized - Press F9 to open");
+            }
+            catch (Exception ex)
+            {
+                ModLogger.Error($"Failed to initialize mod menu: {ex}");
+            }
         }
         
         [HideFromIl2Cpp]
@@ -78,7 +92,7 @@ namespace MegabonkMP.UI
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 _showMenu = !_showMenu;
-                
+                ModLogger.Info($"F9 pressed - ModMenu toggled to: {_showMenu}");
                 // Optionally show/hide cursor
                 // Cursor.visible = _showMenu;
                 // Cursor.lockState = _showMenu ? CursorLockMode.None : CursorLockMode.Locked;
@@ -411,50 +425,67 @@ namespace MegabonkMP.UI
         [HideFromIl2Cpp]
         private void HostGame()
         {
-            if (string.IsNullOrEmpty(_playerName))
+            try
             {
-                ModLogger.Warning("Please enter a player name");
-                return;
+                if (string.IsNullOrEmpty(_playerName?.Trim()))
+                {
+                    ModLogger.Warning("Please enter a valid player name");
+                    return;
+                }
+
+                if (!int.TryParse(_serverPort, out int port) || port < 1024 || port > 65535)
+                {
+                    ModLogger.Warning("Invalid port number (must be 1024-65535)");
+                    return;
+                }
+
+                if (!int.TryParse(_maxPlayers, out int maxPlayers) || maxPlayers < 2 || maxPlayers > 6)
+                {
+                    maxPlayers = 4;
+                    ModLogger.Warning("Invalid max players, using default of 4");
+                }
+
+                ModLogger.Info($"Hosting game on port {port} with max {maxPlayers} players...");
+                NetworkManager.Instance?.Host(port, maxPlayers, _playerName.Trim());
+                SaveSettings();
             }
-            
-            if (!int.TryParse(_serverPort, out int port) || port < 1 || port > 65535)
+            catch (Exception ex)
             {
-                ModLogger.Warning("Invalid port number");
-                return;
+                ModLogger.Error($"Failed to host game: {ex}");
             }
-            
-            if (!int.TryParse(_maxPlayers, out int maxPlayers) || maxPlayers < 2 || maxPlayers > 6)
-            {
-                maxPlayers = 4;
-            }
-            
-            ModLogger.Info($"Hosting game on port {port} with max {maxPlayers} players...");
-            NetworkManager.Instance?.Host(port, maxPlayers, _playerName);
         }
-        
+
         [HideFromIl2Cpp]
         private void JoinGame()
         {
-            if (string.IsNullOrEmpty(_playerName))
+            try
             {
-                ModLogger.Warning("Please enter a player name");
-                return;
+                if (string.IsNullOrEmpty(_playerName?.Trim()))
+                {
+                    ModLogger.Warning("Please enter a valid player name");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(_serverAddress?.Trim()))
+                {
+                    ModLogger.Warning("Please enter a server address");
+                    return;
+                }
+
+                if (!int.TryParse(_serverPort, out int port) || port < 1024 || port > 65535)
+                {
+                    ModLogger.Warning("Invalid port number (must be 1024-65535)");
+                    return;
+                }
+
+                ModLogger.Info($"Connecting to {_serverAddress.Trim()}:{port}...");
+                NetworkManager.Instance?.Connect(_serverAddress.Trim(), port, _playerName.Trim());
+                SaveSettings();
             }
-            
-            if (string.IsNullOrEmpty(_serverAddress))
+            catch (Exception ex)
             {
-                ModLogger.Warning("Please enter a server address");
-                return;
+                ModLogger.Error($"Failed to join game: {ex}");
             }
-            
-            if (!int.TryParse(_serverPort, out int port) || port < 1 || port > 65535)
-            {
-                ModLogger.Warning("Invalid port number");
-                return;
-            }
-            
-            ModLogger.Info($"Connecting to {_serverAddress}:{port}...");
-            NetworkManager.Instance?.Connect(_serverAddress, port, _playerName);
         }
         
         [HideFromIl2Cpp]
