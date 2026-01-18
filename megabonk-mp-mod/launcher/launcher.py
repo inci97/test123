@@ -656,28 +656,32 @@ class LauncherApp:
                 env = os.environ.copy()
                 env["MEGABONK_PATH"] = game_path
                 
-                # Run dotnet build
-                self.log(f"Running: dotnet build -c Release")
+                # Run dotnet build with detailed output
+                self.log(f"Running: dotnet build -c Release --verbosity normal")
                 result = subprocess.run(
-                    ["dotnet", "build", "-c", "Release", csproj_path],
+                    ["dotnet", "build", "-c", "Release", "--verbosity", "normal", csproj_path],
                     capture_output=True,
                     text=True,
                     cwd=mod_source,
                     env=env
                 )
-                
-                # Log output
+
+                # Log all output regardless of success/failure
                 if result.stdout:
+                    self.log("Build stdout:")
                     for line in result.stdout.strip().split('\n'):
                         if line.strip():
-                            self.log(line)
-                
+                            self.log(f"  {line}")
+
+                if result.stderr:
+                    self.log("Build stderr:")
+                    for line in result.stderr.strip().split('\n'):
+                        if line.strip():
+                            self.log(f"  {line}", "ERROR")
+
                 if result.returncode != 0:
-                    if result.stderr:
-                        for line in result.stderr.strip().split('\n'):
-                            if line.strip():
-                                self.log(line, "ERROR")
-                    raise Exception("Build failed. Check the logs for details.")
+                    self.log(f"Build failed with exit code {result.returncode}", "ERROR")
+                    raise Exception("Build failed. Check the logs above for details.")
                 
                 # Find the built DLL
                 # When MEGABONK_PATH is set, output goes directly to BepInEx plugins
@@ -757,18 +761,31 @@ class LauncherApp:
                         webbrowser.open("https://dotnet.microsoft.com/download/dotnet/6.0")
                     return
 
-                # Build the mod
+                # Build the mod with detailed output
+                self.log("Starting build process...")
                 result = subprocess.run(
-                    ["dotnet", "build", "-c", "Release", "--verbosity", "minimal"],
+                    ["dotnet", "build", "-c", "Release", "--verbosity", "normal"],
                     cwd=mod_source,
                     capture_output=True,
                     text=True
                 )
 
+                # Log the full output regardless of success/failure
+                if result.stdout:
+                    self.log(f"Build stdout: {result.stdout}")
+                if result.stderr:
+                    self.log(f"Build stderr: {result.stderr}")
+
                 if result.returncode != 0:
-                    self.log(f"Build failed: {result.stderr}", "ERROR")
+                    error_msg = "Build failed!\n\n"
+                    if result.stderr:
+                        error_msg += f"Errors:\n{result.stderr}\n\n"
+                    if result.stdout:
+                        error_msg += f"Output:\n{result.stdout}"
+
+                    self.log(f"Build failed with exit code {result.returncode}", "ERROR")
                     self.status_var.set("Build failed")
-                    messagebox.showerror("Build Failed", f"Failed to build mod:\n\n{result.stderr}")
+                    messagebox.showerror("Build Failed", error_msg)
                     return
 
                 self.log("Mod built successfully, installing...")
