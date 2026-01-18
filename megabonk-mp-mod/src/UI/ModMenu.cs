@@ -1,5 +1,6 @@
 using UnityEngine;
 using Il2CppInterop.Runtime.Attributes;
+using Il2CppInterop.Runtime.DelegateSupport;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
 
@@ -100,13 +101,17 @@ namespace MegabonkMP.UI
             
             InitStyles();
             
-            // Main window
-            _windowRect = GUI.Window(12345, _windowRect, DrawMainWindow, "Megabonk Multiplayer", _windowStyle);
+            // Main window - use explicit delegate for IL2CPP
+            var mainWindowFunc = DelegateSupport.ConvertDelegate<GUI.WindowFunction>(
+                new System.Action<int>(DrawMainWindow));
+            _windowRect = GUI.Window(12345, _windowRect, mainWindowFunc, "Megabonk Multiplayer", _windowStyle);
             
             // Settings window (if open)
             if (_showSettings)
             {
-                _settingsRect = GUI.Window(12346, _settingsRect, DrawSettingsWindow, "Settings", _windowStyle);
+                var settingsWindowFunc = DelegateSupport.ConvertDelegate<GUI.WindowFunction>(
+                    new System.Action<int>(DrawSettingsWindow));
+                _settingsRect = GUI.Window(12346, _settingsRect, settingsWindowFunc, "Settings", _windowStyle);
             }
         }
         
@@ -130,9 +135,13 @@ namespace MegabonkMP.UI
             
             _buttonStyle = new GUIStyle(GUI.skin.button)
             {
-                fontSize = 13,
-                padding = new RectOffset(10, 10, 5, 5)
+                fontSize = 13
             };
+            // Set padding separately for IL2CPP compatibility
+            _buttonStyle.padding.left = 10;
+            _buttonStyle.padding.right = 10;
+            _buttonStyle.padding.top = 5;
+            _buttonStyle.padding.bottom = 5;
             
             _labelStyle = new GUIStyle(GUI.skin.label)
             {
