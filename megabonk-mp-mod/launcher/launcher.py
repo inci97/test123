@@ -678,14 +678,18 @@ class LauncherApp:
                     raise Exception("Build failed. Check the logs for details.")
                 
                 # Find the built DLL
+                # When MEGABONK_PATH is set, output goes directly to BepInEx plugins
+                # When not set, it goes to bin\Release\ (no net6.0 subfolder)
                 dll_paths = [
-                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                    os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP", "MegabonkMP.dll"),
                     os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
-                    os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP", "MegabonkMP.dll")
+                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
                 ]
                 
                 dll_found = None
+                self.log(f"Looking for DLL in: {dll_paths}")
                 for dll_path in dll_paths:
+                    self.log(f"Checking: {dll_path} - Exists: {os.path.exists(dll_path)}")
                     if os.path.exists(dll_path):
                         dll_found = dll_path
                         break
@@ -725,12 +729,20 @@ class LauncherApp:
         try:
             os.makedirs(mod_dest, exist_ok=True)
             
-            # Look for compiled DLL in multiple locations
+            # First check if DLL was already built to the destination
+            dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+            if os.path.exists(dest_dll):
+                self.log(f"Mod DLL already present at destination: {dest_dll}")
+                messagebox.showinfo("Success", f"Mod is already installed!\n\n{dest_dll}")
+                self.check_installation_status()
+                return
+            
+            # Look for compiled DLL in build output locations
             dll_paths = [
-                os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
                 os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
-                os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
                 os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
             ]
             
             dll_found = None
