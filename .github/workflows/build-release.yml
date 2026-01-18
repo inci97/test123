@@ -16,11 +16,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.0.x'
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -31,24 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: Create release directory
-        run: |
-          New-Item -ItemType Directory -Force -Path release
-
-      - name: Build Mod DLL
-        working-directory: megabonk-mp-mod/src
-        run: |
-          # Build without MEGABONK_PATH for CI - will use default output path
-          dotnet build -c Release --verbosity minimal
-          if (Test-Path "bin/Release/MegabonkMP.dll") {
-            Copy-Item "bin/Release/MegabonkMP.dll" "../../release/MegabonkMP.dll"
-            Write-Host "Mod DLL built successfully"
-          } else {
-            Write-Error "Mod DLL not found after build"
-            exit 1
-          }
-
-      - name: Build EXE
+      - name: Build Launcher EXE
         working-directory: megabonk-mp-mod/launcher
         run: |
           pyinstaller --onefile --windowed --name MegabonkMP_Launcher --icon=NONE launcher.py
@@ -58,12 +36,6 @@ jobs:
         with:
           name: MegabonkMP_Launcher
           path: megabonk-mp-mod/launcher/dist/MegabonkMP_Launcher.exe
-
-      - name: Upload mod artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MegabonkMP_Mod
-          path: release/MegabonkMP.dll
 
   release:
     needs: build-windows
@@ -75,12 +47,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: MegabonkMP_Launcher
-          path: ./release
-
-      - name: Download mod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: MegabonkMP_Mod
           path: ./release
 
       - name: Get version
@@ -97,7 +63,6 @@ jobs:
             
             ### Downloads
             - **MegabonkMP_Launcher.exe** - Windows launcher (no Python required)
-            - **MegabonkMP.dll** - Mod DLL (for manual installation)
             
             ### Features
             - One-click BepInEx installation
@@ -111,15 +76,13 @@ jobs:
             1. Download `MegabonkMP_Launcher.exe`
             2. Run the launcher
             3. Select your Megabonk game folder
-            4. Click "Install BepInEx" then "Build && Install Mod"
+            4. Click "Build && Install Mod"
             5. Launch the game and press F9 for multiplayer menu!
             
             ### Manual Installation
-            1. Install BepInEx 6 Bleeding Edge
-            2. Copy `MegabonkMP.dll` to `BepInEx/plugins/MegabonkMP/`
-            3. Run the game and press F9 for multiplayer menu
+            1. Install BepInEx 6 Bleeding Edge manually
+            2. Use the launcher to build and install the mod
           files: |
             ./release/MegabonkMP_Launcher.exe
-            ./release/MegabonkMP.dll
           draft: false
           prerelease: false
