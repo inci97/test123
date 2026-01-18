@@ -25,8 +25,14 @@
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
   </ItemGroup>
 
-  <!-- Use game's interop assemblies for Unity types (requires MEGABONK_PATH and game to have been run once with BepInEx) -->
+  <!-- Use game's interop assemblies for Unity and IL2CPP types (requires MEGABONK_PATH and game to have been run once with BepInEx) -->
   <ItemGroup Condition="'$(MEGABONK_PATH)' != '' AND Exists('$(MEGABONK_PATH)\BepInEx\interop')">
+    <!-- IL2CPP Core -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Unity Core -->
     <Reference Include="UnityEngine">
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.dll</HintPath>
       <Private>false</Private>
@@ -35,14 +41,24 @@
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Unity UI - try UnityEngine.UI.dll first (common name in interop) -->
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\Unity.ugui.dll</HintPath>
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.UIModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Unity Other Modules -->
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>false</Private>
@@ -51,6 +67,7 @@
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Game Assembly -->
     <Reference Include="Assembly-CSharp">
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
