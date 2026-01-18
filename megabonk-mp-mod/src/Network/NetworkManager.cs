@@ -20,6 +20,11 @@ namespace MegabonkMP.Network
         public bool IsHost { get; private set; }
         public int LocalPlayerId { get; private set; } = -1;
         
+        // Network stats
+        public int Ping { get; private set; } = 0;
+        public long PacketsSent { get; private set; } = 0;
+        public long PacketsReceived { get; private set; } = 0;
+        
         // Network components
         private Server _server;
         private Client _client;
@@ -52,6 +57,14 @@ namespace MegabonkMP.Network
         /// </summary>
         public void Host(int port, int maxPlayers)
         {
+            Host(port, maxPlayers, "Host");
+        }
+        
+        /// <summary>
+        /// Host a new multiplayer session with player name.
+        /// </summary>
+        public void Host(int port, int maxPlayers, string playerName)
+        {
             if (_connectionState != ConnectionState.Disconnected)
             {
                 ModLogger.Warning("Already connected, disconnect first");
@@ -69,7 +82,7 @@ namespace MegabonkMP.Network
                 
                 // Host also acts as local client
                 LocalPlayerId = 0;
-                var hostPlayer = new NetworkPlayer(0, "Host", true);
+                var hostPlayer = new NetworkPlayer(0, playerName ?? "Host", true);
                 AddPlayer(hostPlayer);
                 
                 SetConnectionState(ConnectionState.Connected);
@@ -322,6 +335,7 @@ namespace MegabonkMP.Network
     {
         public int PlayerId { get; }
         public string Name { get; set; }
+        public string PlayerName => Name; // Alias for convenience
         public bool IsHost { get; }
         public bool IsReady { get; set; }
         public float Latency { get; set; }

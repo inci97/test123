@@ -84,14 +84,16 @@ namespace MegabonkMP.Core
             // Register UI components
             ClassInjector.RegisterTypeInIl2Cpp<UI.LobbyUI>();
             ClassInjector.RegisterTypeInIl2Cpp<UI.InGameUI>();
+            ClassInjector.RegisterTypeInIl2Cpp<UI.ModMenu>();
             
             Core.ModLogger.Info("IL2CPP types registered");
         }
         
         private void InitializeUI()
         {
-            // UI initialization will be handled when game loads
-            Core.ModLogger.Info("UI system ready");
+            // Initialize the in-game mod menu
+            UI.ModMenu.Initialize();
+            Core.ModLogger.Info("In-game mod menu initialized - Press F9 to open");
         }
     }
     
