@@ -77,6 +77,8 @@
   <!-- Fallback: NuGet Unity stubs when game path not available (limited - no UI types) -->
   <ItemGroup Condition="'$(MEGABONK_PATH)' == '' OR !Exists('$(MEGABONK_PATH)\BepInEx\interop')">
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.0" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.IMGUIModule" Version="2022.3.0" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.UI" Version="2.0.0" IncludeAssets="compile" />
   </ItemGroup>
 
 </Project>
