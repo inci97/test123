@@ -19,19 +19,47 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <!-- NuGet packages - BepInEx will pull in correct dependency versions -->
+  <!-- NuGet packages for BepInEx -->
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.752" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="UnityEngine.Modules" Version="2022.3.0" IncludeAssets="compile" />
   </ItemGroup>
 
-  <!-- Local game assemblies (only when MEGABONK_PATH is set for local dev with full interop) -->
-  <ItemGroup Condition="'$(MEGABONK_PATH)' != '' AND Exists('$(MEGABONK_PATH)\BepInEx\interop\Assembly-CSharp.dll')">
+  <!-- Use game's interop assemblies for Unity types (requires MEGABONK_PATH and game to have been run once with BepInEx) -->
+  <ItemGroup Condition="'$(MEGABONK_PATH)' != '' AND Exists('$(MEGABONK_PATH)\BepInEx\interop')">
+    <Reference Include="UnityEngine">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\Unity.ugui.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(MEGABONK_PATH)\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(MEGABONK_PATH)\BepInEx\interop\Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
+  </ItemGroup>
+
+  <!-- Fallback: NuGet Unity stubs when game path not available (limited - no UI types) -->
+  <ItemGroup Condition="'$(MEGABONK_PATH)' == '' OR !Exists('$(MEGABONK_PATH)\BepInEx\interop')">
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.0" IncludeAssets="compile" />
   </ItemGroup>
 
 </Project>
