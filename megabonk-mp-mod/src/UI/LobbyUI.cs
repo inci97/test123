@@ -6,6 +6,7 @@ using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Attributes;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
+using NetworkPlayer = global::MegabonkMP.Network.NetworkPlayer;
 
 namespace MegabonkMP.UI
 {
