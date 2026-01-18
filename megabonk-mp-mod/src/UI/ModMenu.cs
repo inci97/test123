@@ -1,6 +1,6 @@
 using UnityEngine;
 using Il2CppInterop.Runtime.Attributes;
-using Il2CppInterop.Runtime.DelegateSupport;
+using Il2CppInterop.Runtime;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
 
