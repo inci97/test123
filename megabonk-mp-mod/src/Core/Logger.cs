@@ -7,7 +7,7 @@ namespace MegabonkMP.Core
     /// Centralized logging utility for the multiplayer mod.
     /// Wraps BepInEx logging with convenience methods.
     /// </summary>
-    public static class Logger
+    public static class ModLogger
     {
         private static ManualLogSource _logSource;
         private static bool _initialized;

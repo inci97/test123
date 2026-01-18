@@ -54,7 +54,7 @@ namespace MegabonkMP.Network
             };
             _receiveThread.Start();
             
-            Logger.Info($"Server started on port {_port}");
+            ModLogger.Info($"Server started on port {_port}");
         }
         
         public void Stop()
@@ -76,7 +76,7 @@ namespace MegabonkMP.Network
                 _endpointToId.Clear();
             }
             
-            Logger.Info("Server stopped");
+            ModLogger.Info("Server stopped");
         }
         
         public void PollEvents()
@@ -128,7 +128,7 @@ namespace MegabonkMP.Network
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to send to {endpoint}: {ex.Message}");
+                ModLogger.Error($"Failed to send to {endpoint}: {ex.Message}");
             }
         }
         
@@ -184,7 +184,7 @@ namespace MegabonkMP.Network
                 {
                     if (_running)
                     {
-                        Logger.Error($"Receive error: {ex.Message}");
+                        ModLogger.Error($"Receive error: {ex.Message}");
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace MegabonkMP.Network
             // Check max players
             if (_clients.Count >= _maxPlayers - 1) // -1 for host
             {
-                Logger.Warning($"Connection rejected from {endPoint}: server full");
+                ModLogger.Warning($"Connection rejected from {endPoint}: server full");
                 return -1;
             }
             
@@ -222,7 +222,7 @@ namespace MegabonkMP.Network
             var acceptPacket = new ConnectAcceptPacket { AssignedPlayerId = clientId };
             SendTo(clientId, acceptPacket, DeliveryMethod.ReliableOrdered);
             
-            Logger.Info($"Client {clientId} ({connectRequest.PlayerName}) connected from {endPoint}");
+            ModLogger.Info($"Client {clientId} ({connectRequest.PlayerName}) connected from {endPoint}");
             OnClientConnected?.Invoke(clientId, connectRequest.PlayerName);
             
             return clientId;
@@ -240,7 +240,7 @@ namespace MegabonkMP.Network
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to process packet from client {clientId}: {ex.Message}");
+                ModLogger.Error($"Failed to process packet from client {clientId}: {ex.Message}");
             }
         }
         
@@ -266,7 +266,7 @@ namespace MegabonkMP.Network
                     {
                         _endpointToId.Remove(client.EndPoint);
                         _clients.Remove(clientId);
-                        Logger.Info($"Client {clientId} timed out");
+                        ModLogger.Info($"Client {clientId} timed out");
                         OnClientDisconnected?.Invoke(clientId);
                     }
                 }

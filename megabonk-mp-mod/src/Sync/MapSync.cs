@@ -32,7 +32,7 @@ namespace MegabonkMP.Sync
         {
             if (!NetworkManager.Instance?.IsHost ?? true)
             {
-                Logger.Warning("Only host can set map seed");
+                ModLogger.Warning("Only host can set map seed");
                 return;
             }
             
@@ -48,7 +48,7 @@ namespace MegabonkMP.Sync
             };
             
             NetworkManager.Instance.Send(packet, DeliveryMethod.ReliableOrdered);
-            Logger.Info($"Map seed set: {seed}, difficulty: {difficulty}, biome: {biomeId}");
+            ModLogger.Info($"Map seed set: {seed}, difficulty: {difficulty}, biome: {biomeId}");
             
             // Apply to local game (placeholder)
             ApplyMapSeed(seed, difficulty, biomeId);
@@ -74,7 +74,7 @@ namespace MegabonkMP.Sync
             _currentDifficulty = packet.Difficulty;
             _currentBiome = packet.BiomeId;
             
-            Logger.Info($"Received map seed: {packet.Seed}");
+            ModLogger.Info($"Received map seed: {packet.Seed}");
             ApplyMapSeed(packet.Seed, packet.Difficulty, packet.BiomeId);
         }
         
@@ -86,7 +86,7 @@ namespace MegabonkMP.Sync
             // Placeholder: Hook into game's MapGeneration system
             // Assets.Scripts.Game.MapGeneration would be patched here
             UnityEngine.Random.InitState(seed);
-            Logger.Debug($"Applied seed {seed} to random state");
+            ModLogger.Debug($"Applied seed {seed} to random state");
         }
         
         /// <summary>
@@ -119,7 +119,7 @@ namespace MegabonkMP.Sync
             if (packet.PlayerId == NetworkManager.Instance?.LocalPlayerId) return;
             
             _playerRooms[packet.PlayerId] = packet.ToRoomId;
-            Logger.Debug($"Player {packet.PlayerId} moved to room {packet.ToRoomId}");
+            ModLogger.Debug($"Player {packet.PlayerId} moved to room {packet.ToRoomId}");
             
             // Could trigger UI update showing player locations
         }

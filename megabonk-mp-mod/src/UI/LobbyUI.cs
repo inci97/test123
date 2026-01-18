@@ -45,7 +45,7 @@ namespace MegabonkMP.UI
                 var mainMenu = GameObject.Find("MainMenu");
                 if (mainMenu == null)
                 {
-                    Logger.Warning("MainMenu not found, creating standalone button");
+                    ModLogger.Warning("MainMenu not found, creating standalone button");
                 }
                 
                 // Create multiplayer button
@@ -55,11 +55,11 @@ namespace MegabonkMP.UI
                     mpButton.transform.SetParent(mainMenu.transform, false);
                 }
                 
-                Logger.Info("Multiplayer button added to menu");
+                ModLogger.Info("Multiplayer button added to menu");
             }
             catch (Exception ex)
             {
-                Logger.Error("Failed to add multiplayer button", ex);
+                ModLogger.Error("Failed to add multiplayer button", ex);
             }
         }
         
@@ -211,7 +211,7 @@ namespace MegabonkMP.UI
                 NetworkManager.Instance.OnPlayerDisconnected += OnPlayerDisconnected;
             }
             
-            Logger.Info("Lobby UI created");
+            ModLogger.Info("Lobby UI created");
         }
         
         private static void OnHostClicked()
@@ -246,7 +246,7 @@ namespace MegabonkMP.UI
         {
             // Toggle ready state
             // Would send PlayerReadyPacket
-            Logger.Debug("Ready toggled");
+            ModLogger.Debug("Ready toggled");
         }
         
         private static void OnStartClicked()
@@ -255,7 +255,7 @@ namespace MegabonkMP.UI
             {
                 // Check all players ready
                 // Start game with SessionStartPacket
-                Logger.Debug("Starting game...");
+                ModLogger.Debug("Starting game...");
             }
         }
         

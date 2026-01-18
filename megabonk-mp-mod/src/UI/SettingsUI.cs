@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using MegabonkMP.Core;
 using MegabonkMP.Network;
 
@@ -133,14 +134,14 @@ namespace MegabonkMP.UI
             _networkStatsToggle = CreateToggle("Show Network Stats", false);
             _networkStatsToggle.transform.SetParent(_settingsPanel.transform, false);
             _networkStatsToggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, yPos);
-            _networkStatsToggle.onValueChanged.AddListener((val) => InGameUI.SetShowNetworkStats(val));
+            _networkStatsToggle.onValueChanged.AddListener(new UnityAction<bool>(OnNetworkStatsToggled));
             
             // Close button
             var closeBtn = CreateButton("Close", Close);
             closeBtn.transform.SetParent(_settingsPanel.transform, false);
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -140);
             
-            Logger.Info("Settings UI created");
+            ModLogger.Info("Settings UI created");
         }
         
         private static void LoadSettings()
@@ -159,10 +160,15 @@ namespace MegabonkMP.UI
             if (_sharedLootToggle != null) _sharedLootToggle.interactable = isHost;
         }
         
+        private static void OnNetworkStatsToggled(bool value)
+        {
+            InGameUI.SetShowNetworkStats(value);
+        }
+        
         private static void SaveSettings()
         {
             // Save to config (placeholder)
-            Logger.Debug("Settings saved");
+            ModLogger.Debug("Settings saved");
         }
         
         // UI Helpers

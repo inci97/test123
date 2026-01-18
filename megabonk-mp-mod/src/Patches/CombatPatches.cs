@@ -168,7 +168,7 @@ namespace MegabonkMP.Patches
                     bool friendlyFireEnabled = false; // Placeholder
                     if (!friendlyFireEnabled)
                     {
-                        Logger.Debug($"Blocked friendly fire from player {attackerId}");
+                        ModLogger.Debug($"Blocked friendly fire from player {attackerId}");
                         return false; // Skip damage
                     }
                 }
@@ -192,7 +192,7 @@ namespace MegabonkMP.Patches
                 
                 // Debuff sync would go here
                 // Could create a dedicated DebuffPacket if needed
-                Logger.Debug($"Debuff {debuffType} applied to {targetId} by {sourcePlayerId}");
+                ModLogger.Debug($"Debuff {debuffType} applied to {targetId} by {sourcePlayerId}");
             }
         }
     }

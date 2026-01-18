@@ -42,7 +42,7 @@ namespace MegabonkMP.UI
             // Create ping marker prefab
             CreatePingMarkerPrefab();
             
-            Logger.Info("In-game UI initialized");
+            ModLogger.Info("In-game UI initialized");
         }
         
         private static void CreateNetworkStatsDisplay()

@@ -41,7 +41,7 @@ namespace MegabonkMP.Sync
         {
             _localPlayer = localPlayer;
             _localTransform = localPlayer?.transform;
-            Logger.Info("PlayerSync initialized with local player");
+            ModLogger.Info("PlayerSync initialized with local player");
         }
         
         [HideFromIl2Cpp]
@@ -185,12 +185,12 @@ namespace MegabonkMP.Sync
                 var remote = new RemotePlayer(playerId, remoteGO);
                 _remotePlayers[playerId] = remote;
                 
-                Logger.Info($"Spawned remote player {playerId}");
+                ModLogger.Info($"Spawned remote player {playerId}");
                 return remote;
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to spawn remote player {playerId}", ex);
+                ModLogger.Error($"Failed to spawn remote player {playerId}", ex);
                 return null;
             }
         }
@@ -206,7 +206,7 @@ namespace MegabonkMP.Sync
                 {
                     remote.Destroy();
                     _remotePlayers.Remove(playerId);
-                    Logger.Info($"Removed remote player {playerId}");
+                    ModLogger.Info($"Removed remote player {playerId}");
                 }
             }
         }

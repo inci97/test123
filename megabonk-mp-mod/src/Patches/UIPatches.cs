@@ -84,7 +84,7 @@ namespace MegabonkMP.Patches
                 if (!NetworkManager.Instance?.IsConnected ?? true) return;
                 
                 // Modify end screen to show all players' stats
-                Logger.Debug("Preparing multiplayer end screen");
+                ModLogger.Debug("Preparing multiplayer end screen");
             }
         }
         
@@ -102,7 +102,7 @@ namespace MegabonkMP.Patches
                 
                 // Broadcast character selection to other players
                 // This would update the lobby UI
-                Logger.Debug($"Selected character {characterId} skin {skinId}");
+                ModLogger.Debug($"Selected character {characterId} skin {skinId}");
             }
         }
         

@@ -141,7 +141,7 @@ namespace MegabonkMP.Patches
                 
                 // Initialize player sync with local player reference
                 PlayerSync.Initialize(player);
-                Logger.Info("Local player spawned and registered for sync");
+                ModLogger.Info("Local player spawned and registered for sync");
             }
         }
         
@@ -158,7 +158,7 @@ namespace MegabonkMP.Patches
                 // Prevent pause if in multiplayer session
                 if (NetworkManager.Instance?.IsConnected ?? false)
                 {
-                    Logger.Debug("Pause disabled in multiplayer");
+                    ModLogger.Debug("Pause disabled in multiplayer");
                     return false; // Skip original method
                 }
                 return true;

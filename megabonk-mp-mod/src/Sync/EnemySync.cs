@@ -31,7 +31,7 @@ namespace MegabonkMP.Sync
             // Scale: 400 base, +50 per additional player
             _enemyCap = 400 + (playerCount - 1) * 50;
             if (_enemyCap > 600) _enemyCap = 600;
-            Logger.Info($"Enemy cap set to {_enemyCap} for {playerCount} players");
+            ModLogger.Info($"Enemy cap set to {_enemyCap} for {playerCount} players");
         }
         
         [HideFromIl2Cpp]
@@ -236,7 +236,7 @@ namespace MegabonkMP.Sync
             if (packet.KillerPlayerId == NetworkManager.Instance?.LocalPlayerId)
             {
                 // Call game systems to award rewards (placeholder)
-                Logger.Debug($"Awarded {packet.XpReward} XP, {packet.CreditReward} credits");
+                ModLogger.Debug($"Awarded {packet.XpReward} XP, {packet.CreditReward} credits");
             }
         }
         

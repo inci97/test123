@@ -52,7 +52,7 @@ namespace MegabonkMP.Network
             Send(connectPacket, DeliveryMethod.ReliableOrdered);
             
             _lastServerContact = DateTime.UtcNow;
-            Logger.Info($"Connection request sent to {address}:{port}");
+            ModLogger.Info($"Connection request sent to {address}:{port}");
         }
         
         public void Disconnect()
@@ -72,7 +72,7 @@ namespace MegabonkMP.Network
             _socket?.Close();
             _socket = null;
             
-            Logger.Info("Disconnected from server");
+            ModLogger.Info("Disconnected from server");
         }
         
         public void PollEvents()
@@ -85,7 +85,7 @@ namespace MegabonkMP.Network
             // Check for timeout
             if (_running && (DateTime.UtcNow - _lastServerContact).TotalSeconds > _connectionTimeout)
             {
-                Logger.Warning("Connection to server timed out");
+                ModLogger.Warning("Connection to server timed out");
                 OnDisconnected?.Invoke();
             }
         }
@@ -102,7 +102,7 @@ namespace MegabonkMP.Network
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to send packet: {ex.Message}");
+                ModLogger.Error($"Failed to send packet: {ex.Message}");
             }
         }
         
@@ -139,7 +139,7 @@ namespace MegabonkMP.Network
                 {
                     if (_running)
                     {
-                        Logger.Error($"Receive error: {ex.Message}");
+                        ModLogger.Error($"Receive error: {ex.Message}");
                     }
                 }
             }
@@ -155,7 +155,7 @@ namespace MegabonkMP.Network
                 // Handle connection accept
                 if (packet is ConnectAcceptPacket acceptPacket)
                 {
-                    Logger.Info($"Connected with player ID {acceptPacket.AssignedPlayerId}");
+                    ModLogger.Info($"Connected with player ID {acceptPacket.AssignedPlayerId}");
                     OnConnected?.Invoke(acceptPacket.AssignedPlayerId);
                     return;
                 }
@@ -163,7 +163,7 @@ namespace MegabonkMP.Network
                 // Handle disconnect
                 if (packet is DisconnectPacket disconnectPacket)
                 {
-                    Logger.Info($"Disconnected by server: {disconnectPacket.Reason}");
+                    ModLogger.Info($"Disconnected by server: {disconnectPacket.Reason}");
                     OnDisconnected?.Invoke();
                     return;
                 }
@@ -172,7 +172,7 @@ namespace MegabonkMP.Network
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to process packet: {ex.Message}");
+                ModLogger.Error($"Failed to process packet: {ex.Message}");
             }
         }
     }

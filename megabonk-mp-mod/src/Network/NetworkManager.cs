@@ -44,7 +44,7 @@ namespace MegabonkMP.Network
         {
             Instance = this;
             PacketRegistry.Initialize();
-            Logger.Info("NetworkManager created");
+            ModLogger.Info("NetworkManager created");
         }
         
         /// <summary>
@@ -54,7 +54,7 @@ namespace MegabonkMP.Network
         {
             if (_connectionState != ConnectionState.Disconnected)
             {
-                Logger.Warning("Already connected, disconnect first");
+                ModLogger.Warning("Already connected, disconnect first");
                 return;
             }
             
@@ -73,11 +73,11 @@ namespace MegabonkMP.Network
                 AddPlayer(hostPlayer);
                 
                 SetConnectionState(ConnectionState.Connected);
-                Logger.Info($"Hosting on port {port}, max {maxPlayers} players");
+                ModLogger.Info($"Hosting on port {port}, max {maxPlayers} players");
             }
             catch (Exception ex)
             {
-                Logger.Error("Failed to start host", ex);
+                ModLogger.Error("Failed to start host", ex);
                 Shutdown();
             }
         }
@@ -89,7 +89,7 @@ namespace MegabonkMP.Network
         {
             if (_connectionState != ConnectionState.Disconnected)
             {
-                Logger.Warning("Already connected, disconnect first");
+                ModLogger.Warning("Already connected, disconnect first");
                 return;
             }
             
@@ -103,11 +103,11 @@ namespace MegabonkMP.Network
                 
                 SetConnectionState(ConnectionState.Connecting);
                 _client.Connect(address, port, playerName);
-                Logger.Info($"Connecting to {address}:{port}");
+                ModLogger.Info($"Connecting to {address}:{port}");
             }
             catch (Exception ex)
             {
-                Logger.Error("Failed to connect", ex);
+                ModLogger.Error("Failed to connect", ex);
                 Shutdown();
             }
         }
@@ -117,7 +117,7 @@ namespace MegabonkMP.Network
         /// </summary>
         public void Shutdown()
         {
-            Logger.Info("Shutting down network...");
+            ModLogger.Info("Shutting down network...");
             
             _server?.Stop();
             _server = null;
@@ -228,7 +228,7 @@ namespace MegabonkMP.Network
             if (_connectionState == state) return;
             _connectionState = state;
             OnConnectionStateChanged?.Invoke(state);
-            Logger.Info($"Connection state: {state}");
+            ModLogger.Info($"Connection state: {state}");
         }
         
         // Server event handlers

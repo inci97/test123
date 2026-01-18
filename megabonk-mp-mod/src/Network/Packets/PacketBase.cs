@@ -123,7 +123,7 @@ namespace MegabonkMP.Network.Packets
             Register<ChatMessagePacket>(PacketType.ChatMessage);
             Register<PingPacket>(PacketType.Ping);
             
-            Logger.Info($"Registered {_factories.Count} packet types");
+            ModLogger.Info($"Registered {_factories.Count} packet types");
         }
         
         private static void Register<T>(PacketType type) where T : IPacket, new()
@@ -137,7 +137,7 @@ namespace MegabonkMP.Network.Packets
             {
                 return factory();
             }
-            Logger.Warning($"Unknown packet type: {type}");
+            ModLogger.Warning($"Unknown packet type: {type}");
             return null;
         }
     }

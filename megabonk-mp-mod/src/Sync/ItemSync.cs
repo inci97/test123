@@ -59,7 +59,7 @@ namespace MegabonkMP.Sync
             };
             
             NetworkManager.Instance.Send(packet, DeliveryMethod.ReliableOrdered);
-            Logger.Debug($"Item {netId} spawned (type {itemTypeId}, rarity {rarity})");
+            ModLogger.Debug($"Item {netId} spawned (type {itemTypeId}, rarity {rarity})");
             
             return netId;
         }
@@ -101,7 +101,7 @@ namespace MegabonkMP.Sync
                 if (!_items.ContainsKey(packet.ItemNetId))
                 {
                     // Item already picked up or doesn't exist
-                    Logger.Debug($"Pickup denied: item {packet.ItemNetId} not found");
+                    ModLogger.Debug($"Pickup denied: item {packet.ItemNetId} not found");
                     return;
                 }
             }
@@ -140,7 +140,7 @@ namespace MegabonkMP.Sync
             if (packet.PlayerId == NetworkManager.Instance?.LocalPlayerId)
             {
                 // Call game inventory system (placeholder)
-                Logger.Debug($"Picked up item {packet.ItemNetId}");
+                ModLogger.Debug($"Picked up item {packet.ItemNetId}");
             }
         }
         
@@ -156,7 +156,7 @@ namespace MegabonkMP.Sync
                         UnityEngine.Object.Destroy(item.GameObject);
                     }
                     _items.Remove(itemNetId);
-                    Logger.Debug($"Player {playerId} picked up item {itemNetId}");
+                    ModLogger.Debug($"Player {playerId} picked up item {itemNetId}");
                 }
             }
         }

@@ -26,42 +26,42 @@ namespace MegabonkMP.Core
             Instance = this;
             
             // Initialize logging
-            Logger.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
+            Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
             
             try
             {
                 // Load configuration
                 _config = new Config(Config);
-                Core.Logger.Initialize(Log);
-                Core.Logger.Info("Configuration loaded");
+                Core.ModLogger.Initialize(Log);
+                Core.ModLogger.Info("Configuration loaded");
                 
                 // Initialize Harmony for patching
                 HarmonyInstance = new Harmony(PluginInfo.PLUGIN_GUID);
                 HarmonyInstance.PatchAll(typeof(Plugin).Assembly);
-                Core.Logger.Info("Harmony patches applied");
+                Core.ModLogger.Info("Harmony patches applied");
                 
                 // Register IL2CPP types for runtime injection
                 RegisterIL2CPPTypes();
                 
                 // Initialize network manager
                 _networkManager = new Network.NetworkManager();
-                Core.Logger.Info("Network manager initialized");
+                Core.ModLogger.Info("Network manager initialized");
                 
                 // Initialize UI components
                 InitializeUI();
                 
-                Core.Logger.Info($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                Core.ModLogger.Info($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
             }
             catch (Exception ex)
             {
-                Core.Logger.Error($"Failed to load plugin: {ex}");
+                Core.ModLogger.Error($"Failed to load plugin: {ex}");
                 throw;
             }
         }
         
         public override bool Unload()
         {
-            Core.Logger.Info("Unloading Megabonk MP...");
+            Core.ModLogger.Info("Unloading Megabonk MP...");
             
             // Cleanup
             _networkManager?.Shutdown();
@@ -85,13 +85,13 @@ namespace MegabonkMP.Core
             ClassInjector.RegisterTypeInIl2Cpp<UI.LobbyUI>();
             ClassInjector.RegisterTypeInIl2Cpp<UI.InGameUI>();
             
-            Core.Logger.Info("IL2CPP types registered");
+            Core.ModLogger.Info("IL2CPP types registered");
         }
         
         private void InitializeUI()
         {
             // UI initialization will be handled when game loads
-            Core.Logger.Info("UI system ready");
+            Core.ModLogger.Info("UI system ready");
         }
     }
     
