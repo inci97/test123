@@ -25,12 +25,12 @@ except ImportError:
 
 # Constants
 APP_NAME = "Megabonk MP Launcher"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 CONFIG_FILE = "launcher_config.json"
 LOG_FILE = "launcher.log"
 
-BEPINEX_URL = "https://builds.bepinex.dev/projects/bepinex_be/752/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.752%2B1578a55.zip"
-BEPINEX_VERSION = "6.0.0-be.752"
+BEPINEX_URL = "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip"
+BEPINEX_VERSION = "6.0.0-pre.2"
 
 DEFAULT_CONFIG = {
     "game_path": "",
