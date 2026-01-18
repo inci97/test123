@@ -26,12 +26,17 @@ except ImportError:
 
 # Constants
 APP_NAME = "Megabonk MP Launcher"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 CONFIG_FILE = "launcher_config.json"
 LOG_FILE = "launcher.log"
 
 BEPINEX_URL = "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip"
 BEPINEX_VERSION = "6.0.0-pre.2"
+
+# GitHub source repository
+GITHUB_REPO = "inci97/test123"
+GITHUB_SOURCE_URL = f"https://github.com/{GITHUB_REPO}/archive/refs/heads/main.zip"
+MOD_SOURCE_FOLDER = "megabonk-mp-mod"
 
 DEFAULT_CONFIG = {
     "game_path": "",
@@ -210,23 +215,34 @@ class LauncherApp:
         self.mod_status = ttk.Label(status_frame, text="⬜ Mod not installed")
         self.mod_status.pack(anchor=tk.W)
         
-        # Install Buttons
+        self.source_status = ttk.Label(status_frame, text="⬜ Source not downloaded")
+        self.source_status.pack(anchor=tk.W)
+        
+        # Install Buttons - Row 1
         install_frame = ttk.Frame(status_frame)
-        install_frame.pack(fill=tk.X, pady=10)
+        install_frame.pack(fill=tk.X, pady=5)
         
         self.install_bepinex_btn = ttk.Button(install_frame, text="Install BepInEx", 
                                                command=self.install_bepinex)
         self.install_bepinex_btn.pack(side=tk.LEFT, padx=5)
         
+        self.download_source_btn = ttk.Button(install_frame, text="Download Source", 
+                                               command=self.download_source)
+        self.download_source_btn.pack(side=tk.LEFT, padx=5)
+        
         self.build_mod_btn = ttk.Button(install_frame, text="Build Mod", 
                                          command=self.build_mod)
         self.build_mod_btn.pack(side=tk.LEFT, padx=5)
         
-        self.install_mod_btn = ttk.Button(install_frame, text="Install/Update Mod", 
+        # Install Buttons - Row 2
+        install_frame2 = ttk.Frame(status_frame)
+        install_frame2.pack(fill=tk.X, pady=5)
+        
+        self.install_mod_btn = ttk.Button(install_frame2, text="Install/Update Mod", 
                                            command=self.install_mod)
         self.install_mod_btn.pack(side=tk.LEFT, padx=5)
         
-        ttk.Button(install_frame, text="Verify Installation", 
+        ttk.Button(install_frame2, text="Verify Installation", 
                    command=self.check_installation_status).pack(side=tk.LEFT, padx=5)
         
         # Player Settings
@@ -438,31 +454,40 @@ class LauncherApp:
             self.mod_status.config(text="⬜ Game path not set")
             self.bepinex_installed.set(False)
             self.mod_installed.set(False)
-            return
-        
-        # Check BepInEx
-        bepinex_path = os.path.join(game_path, "BepInEx")
-        bepinex_core = os.path.join(bepinex_path, "core", "BepInEx.Core.dll")
-        
-        if os.path.exists(bepinex_core):
-            self.bepinex_status.config(text="✅ BepInEx installed")
-            self.bepinex_installed.set(True)
-            self.log("BepInEx found")
         else:
-            self.bepinex_status.config(text="❌ BepInEx not installed")
-            self.bepinex_installed.set(False)
+            # Check BepInEx
+            bepinex_path = os.path.join(game_path, "BepInEx")
+            bepinex_core = os.path.join(bepinex_path, "core", "BepInEx.Core.dll")
+            
+            if os.path.exists(bepinex_core):
+                self.bepinex_status.config(text="✅ BepInEx installed")
+                self.bepinex_installed.set(True)
+                self.log("BepInEx found")
+            else:
+                self.bepinex_status.config(text="❌ BepInEx not installed")
+                self.bepinex_installed.set(False)
+            
+            # Check Mod
+            mod_path = os.path.join(bepinex_path, "plugins", "MegabonkMP")
+            mod_dll = os.path.join(mod_path, "MegabonkMP.dll")
+            
+            if os.path.exists(mod_dll):
+                self.mod_status.config(text="✅ MegabonkMP mod installed")
+                self.mod_installed.set(True)
+                self.log("MegabonkMP mod found")
+            else:
+                self.mod_status.config(text="❌ MegabonkMP mod not installed")
+                self.mod_installed.set(False)
         
-        # Check Mod
-        mod_path = os.path.join(bepinex_path, "plugins", "MegabonkMP")
-        mod_dll = os.path.join(mod_path, "MegabonkMP.dll")
+        # Check Source (independent of game path)
+        mod_source = self.get_mod_source_dir()
+        csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
         
-        if os.path.exists(mod_dll):
-            self.mod_status.config(text="✅ MegabonkMP mod installed")
-            self.mod_installed.set(True)
-            self.log("MegabonkMP mod found")
+        if os.path.exists(csproj_path):
+            self.source_status.config(text="✅ Source files available")
+            self.log(f"Source found at: {mod_source}")
         else:
-            self.mod_status.config(text="❌ MegabonkMP mod not installed")
-            self.mod_installed.set(False)
+            self.source_status.config(text="❌ Source not downloaded")
     
     def install_bepinex(self):
         """Download and install BepInEx"""
@@ -506,6 +531,85 @@ class LauncherApp:
         
         threading.Thread(target=download_and_install, daemon=True).start()
     
+    def get_mod_source_dir(self):
+        """Get the mod source directory, downloading from GitHub if needed"""
+        launcher_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Check for local source first (development mode)
+        local_source = os.path.join(launcher_dir, "..", "src")
+        if os.path.exists(os.path.join(local_source, "MegabonkMP.csproj")):
+            return local_source
+        
+        # Use downloaded source in user's app data
+        if sys.platform == "win32":
+            app_data = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
+        else:
+            app_data = os.path.expanduser("~/.local/share")
+        
+        source_dir = os.path.join(app_data, "MegabonkMP", "src")
+        return source_dir
+    
+    def download_source(self):
+        """Download latest source files from GitHub"""
+        self.status_var.set("Downloading latest source...")
+        self.log(f"Downloading source from {GITHUB_SOURCE_URL}")
+        
+        def do_download():
+            try:
+                # Setup directories
+                if sys.platform == "win32":
+                    app_data = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
+                else:
+                    app_data = os.path.expanduser("~/.local/share")
+                
+                mod_dir = os.path.join(app_data, "MegabonkMP")
+                os.makedirs(mod_dir, exist_ok=True)
+                
+                zip_path = os.path.join(mod_dir, "source_temp.zip")
+                
+                # Download
+                urllib.request.urlretrieve(GITHUB_SOURCE_URL, zip_path)
+                self.log("Download complete, extracting...")
+                
+                # Extract
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(mod_dir)
+                
+                # The zip extracts to test123-main/megabonk-mp-mod/src
+                # Move to the right location
+                extracted_dir = os.path.join(mod_dir, "test123-main", MOD_SOURCE_FOLDER, "src")
+                target_dir = os.path.join(mod_dir, "src")
+                
+                # Remove old source if exists
+                if os.path.exists(target_dir):
+                    shutil.rmtree(target_dir)
+                
+                if os.path.exists(extracted_dir):
+                    shutil.move(extracted_dir, target_dir)
+                    self.log(f"Source files installed to {target_dir}")
+                else:
+                    raise Exception(f"Source folder not found in downloaded archive")
+                
+                # Cleanup
+                os.remove(zip_path)
+                extracted_root = os.path.join(mod_dir, "test123-main")
+                if os.path.exists(extracted_root):
+                    shutil.rmtree(extracted_root)
+                
+                self.root.after(0, lambda: self.status_var.set("Source downloaded!"))
+                self.root.after(0, lambda: messagebox.showinfo("Success", 
+                    f"Latest source files downloaded!\n\nLocation: {target_dir}\n\n"
+                    "You can now click 'Build Mod' to compile."))
+                return True
+                
+            except Exception as e:
+                self.log(f"Failed to download source: {e}", "ERROR")
+                self.root.after(0, lambda: self.status_var.set("Download failed"))
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to download source:\n{e}"))
+                return False
+        
+        threading.Thread(target=do_download, daemon=True).start()
+    
     def build_mod(self):
         """Build the mod from source"""
         game_path = self.game_path_var.get()
@@ -530,14 +634,15 @@ class LauncherApp:
             return
         
         # Get mod source directory
-        launcher_dir = os.path.dirname(os.path.abspath(__file__))
-        mod_source = os.path.join(launcher_dir, "..", "src")
+        mod_source = self.get_mod_source_dir()
         csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
         
         if not os.path.exists(csproj_path):
-            self.log(f"Project file not found: {csproj_path}", "ERROR")
-            messagebox.showerror("Error", "Mod source files not found.\n\n"
-                                          "Make sure the 'src' folder is next to the launcher.")
+            self.log(f"Project file not found: {csproj_path}", "WARNING")
+            if messagebox.askyesno("Download Source", 
+                                    "Mod source files not found.\n\n"
+                                    "Would you like to download the latest source from GitHub?"):
+                self.download_source()
             return
         
         self.status_var.set("Building mod...")
@@ -611,9 +716,8 @@ class LauncherApp:
             messagebox.showerror("Error", "Please install BepInEx first.")
             return
         
-        # Get mod source (same directory as launcher)
-        launcher_dir = os.path.dirname(os.path.abspath(__file__))
-        mod_source = os.path.join(launcher_dir, "..", "src")
+        # Get mod source directory
+        mod_source = self.get_mod_source_dir()
         
         # Mod destination
         mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
