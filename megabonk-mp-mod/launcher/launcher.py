@@ -13,6 +13,7 @@ import logging
 import threading
 import webbrowser
 import urllib.request
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -25,7 +26,7 @@ except ImportError:
 
 # Constants
 APP_NAME = "Megabonk MP Launcher"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.1.0"
 CONFIG_FILE = "launcher_config.json"
 LOG_FILE = "launcher.log"
 
@@ -216,6 +217,10 @@ class LauncherApp:
         self.install_bepinex_btn = ttk.Button(install_frame, text="Install BepInEx", 
                                                command=self.install_bepinex)
         self.install_bepinex_btn.pack(side=tk.LEFT, padx=5)
+        
+        self.build_mod_btn = ttk.Button(install_frame, text="Build Mod", 
+                                         command=self.build_mod)
+        self.build_mod_btn.pack(side=tk.LEFT, padx=5)
         
         self.install_mod_btn = ttk.Button(install_frame, text="Install/Update Mod", 
                                            command=self.install_mod)
@@ -501,6 +506,103 @@ class LauncherApp:
         
         threading.Thread(target=download_and_install, daemon=True).start()
     
+    def build_mod(self):
+        """Build the mod from source"""
+        game_path = self.game_path_var.get()
+        
+        if not self.bepinex_installed.get():
+            messagebox.showerror("Error", "Please install BepInEx first and run the game once\n"
+                                          "to generate the required interop assemblies.")
+            return
+        
+        # Check if dotnet is available
+        try:
+            result = subprocess.run(["dotnet", "--version"], capture_output=True, text=True)
+            if result.returncode != 0:
+                raise FileNotFoundError()
+            self.log(f"Found .NET SDK: {result.stdout.strip()}")
+        except FileNotFoundError:
+            self.log(".NET SDK not found", "ERROR")
+            if messagebox.askyesno("Install .NET SDK", 
+                                    ".NET SDK is required to build the mod.\n\n"
+                                    "Would you like to open the download page?"):
+                webbrowser.open("https://dotnet.microsoft.com/download/dotnet/6.0")
+            return
+        
+        # Get mod source directory
+        launcher_dir = os.path.dirname(os.path.abspath(__file__))
+        mod_source = os.path.join(launcher_dir, "..", "src")
+        csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
+        
+        if not os.path.exists(csproj_path):
+            self.log(f"Project file not found: {csproj_path}", "ERROR")
+            messagebox.showerror("Error", "Mod source files not found.\n\n"
+                                          "Make sure the 'src' folder is next to the launcher.")
+            return
+        
+        self.status_var.set("Building mod...")
+        self.log("Starting mod build...")
+        
+        def do_build():
+            try:
+                # Set environment variable for game path
+                env = os.environ.copy()
+                env["MEGABONK_PATH"] = game_path
+                
+                # Run dotnet build
+                self.log(f"Running: dotnet build -c Release")
+                result = subprocess.run(
+                    ["dotnet", "build", "-c", "Release", csproj_path],
+                    capture_output=True,
+                    text=True,
+                    cwd=mod_source,
+                    env=env
+                )
+                
+                # Log output
+                if result.stdout:
+                    for line in result.stdout.strip().split('\n'):
+                        if line.strip():
+                            self.log(line)
+                
+                if result.returncode != 0:
+                    if result.stderr:
+                        for line in result.stderr.strip().split('\n'):
+                            if line.strip():
+                                self.log(line, "ERROR")
+                    raise Exception("Build failed. Check the logs for details.")
+                
+                # Find the built DLL
+                dll_paths = [
+                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                    os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
+                    os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP", "MegabonkMP.dll")
+                ]
+                
+                dll_found = None
+                for dll_path in dll_paths:
+                    if os.path.exists(dll_path):
+                        dll_found = dll_path
+                        break
+                
+                if dll_found:
+                    self.log(f"Build successful! DLL at: {dll_found}")
+                    self.root.after(0, lambda: self.status_var.set("Build successful!"))
+                    self.root.after(0, lambda: messagebox.showinfo("Success", 
+                        f"Mod built successfully!\n\nDLL: {dll_found}\n\n"
+                        "Click 'Install/Update Mod' to copy it to BepInEx plugins."))
+                else:
+                    self.log("Build completed but DLL not found", "WARNING")
+                    self.root.after(0, lambda: self.status_var.set("Build complete"))
+                
+            except Exception as e:
+                self.log(f"Build failed: {e}", "ERROR")
+                self.root.after(0, lambda: self.status_var.set("Build failed"))
+                self.root.after(0, lambda: messagebox.showerror("Build Failed", 
+                    f"Failed to build mod:\n{e}\n\nCheck the Logs tab for details."))
+        
+        threading.Thread(target=do_build, daemon=True).start()
+    
     def install_mod(self):
         """Install/update the mod"""
         game_path = self.game_path_var.get()
@@ -513,22 +615,37 @@ class LauncherApp:
         launcher_dir = os.path.dirname(os.path.abspath(__file__))
         mod_source = os.path.join(launcher_dir, "..", "src")
         
-        # For now, just create the directory structure
+        # Mod destination
         mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
         
         try:
             os.makedirs(mod_dest, exist_ok=True)
             
-            # Check if compiled DLL exists
-            dll_path = os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll")
-            if os.path.exists(dll_path):
-                shutil.copy2(dll_path, mod_dest)
-                self.log("Mod DLL copied")
+            # Look for compiled DLL in multiple locations
+            dll_paths = [
+                os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
+            ]
+            
+            dll_found = None
+            for dll_path in dll_paths:
+                if os.path.exists(dll_path):
+                    dll_found = dll_path
+                    break
+            
+            if dll_found:
+                dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+                shutil.copy2(dll_found, dest_dll)
+                self.log(f"Mod DLL copied from {dll_found} to {dest_dll}")
+                messagebox.showinfo("Success", f"Mod installed successfully!\n\n{dest_dll}")
             else:
                 self.log("Mod DLL not found. Please build the mod first.", "WARNING")
-                messagebox.showwarning("Build Required", 
-                    "Mod DLL not found.\n\nPlease build the mod project first:\n"
-                    "cd src && dotnet build -c Release")
+                if messagebox.askyesno("Build Required", 
+                    "Mod DLL not found.\n\nWould you like to build the mod now?"):
+                    self.build_mod()
+                return
             
             self.check_installation_status()
             
@@ -619,7 +736,6 @@ DebugMode = {str(self.debug_mode_var.get()).lower()}
         self.status_var.set("Launching game...")
         
         try:
-            import subprocess
             subprocess.Popen([exe_path], cwd=game_path)
             self.log("Game launched successfully")
             self.status_var.set("Game running")
