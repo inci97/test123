@@ -16,8 +16,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook player health updates to sync across network.
         /// Target: PlayerHealth::Tick (0x1803E9EB0 per roadmap)
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PlayerHealthPatch
         {
             // Note: Actual method target would be determined by decompilation
@@ -37,8 +38,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook player movement for network sync.
         /// Target: PlayerMovementValues
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PlayerMovementPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Player.PlayerMovement), "Update")]
@@ -53,8 +55,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook stat calculations for multiplayer balancing.
         /// Target: StatComponents::GetFinalValue (0x1803f5a70)
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class StatComponentsPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Inventory__Items__Pickups.Stats.StatComponents), "GetFinalValue")]
@@ -98,8 +101,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook player death for network notification.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PlayerDeathPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Player.PlayerHealth), "Die")]
@@ -129,8 +133,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook player spawn/respawn.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PlayerSpawnPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Player.PlayerSpawner), "SpawnPlayer")]
@@ -147,8 +152,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Disable pause in multiplayer.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PausePatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Menu.PauseMenu), "Pause")]

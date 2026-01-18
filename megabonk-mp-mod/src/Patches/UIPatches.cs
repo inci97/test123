@@ -14,8 +14,9 @@ namespace MegabonkMP.Patches
     {
         /// <summary>
         /// Hook main menu to add multiplayer button.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class MainMenuPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Menu.MainMenu), "Start")]
@@ -29,8 +30,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook HUD to add multiplayer elements.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class HUDPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.UI.HUD), "Start")]
@@ -56,8 +58,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook minimap to show other players.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class MinimapPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.UI.Minimap), "Update")]
@@ -73,8 +76,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook end screen for multiplayer stats.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class EndScreenPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Menu.EndScreen), "Show")]
@@ -90,8 +94,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook character select for multiplayer.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class CharacterSelectPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Menu.CharacterSelect), "SelectCharacter")]
@@ -108,8 +113,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook shop for multiplayer (shared economy option).
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class ShopPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Menu.Shop.ShopManager), "PurchaseItem")]

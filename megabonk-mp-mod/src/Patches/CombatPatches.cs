@@ -16,8 +16,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook damage calculation for network sync.
         /// Target: DamageUtility::GetPlayerDamage (0x18043CAE0)
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class DamageUtilityPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Combat.DamageUtility), "GetPlayerDamage")]
@@ -44,8 +45,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook weapon damage calculation.
         /// Target: WeaponUtility::GetDamage (0x1803FE380)
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class WeaponDamagePatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Inventory__Items__Pickups.Weapons.WeaponUtility), "GetDamage")]
@@ -59,8 +61,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook weapon fire for projectile sync.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class WeaponFirePatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Combat.Weapon), "Fire")]
@@ -88,8 +91,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook projectile spawn for network sync.
         /// Note: Object pooling affects this - need to handle pool recycling.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class ProjectileSpawnPatch
         {
             private static int _projectileNetId = 1;
@@ -123,8 +127,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook enemy damage for multiplayer XP/credit distribution.
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class EnemyDamagePatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Enemy.EnemyHealth), "TakeDamage")]
@@ -148,8 +153,9 @@ namespace MegabonkMP.Patches
         
         /// <summary>
         /// Hook player damage (for friendly fire check).
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class PlayerDamagePatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Player.PlayerHealth), "TakeDamage")]
@@ -180,8 +186,9 @@ namespace MegabonkMP.Patches
         /// <summary>
         /// Hook debuff application for network sync.
         /// Elemental effects: Poison(1), Freeze(2), Burn(4), Lightning(8), Charm(32), Bleeding(64)
+        /// TODO: Uncomment [HarmonyPatch] and specify target when game methods are identified
         /// </summary>
-        [HarmonyPatch]
+        // [HarmonyPatch] - Disabled until target method is identified
         public static class DebuffPatch
         {
             // [HarmonyPatch(typeof(Assets.Scripts.Combat.DebuffManager), "ApplyDebuff")]
