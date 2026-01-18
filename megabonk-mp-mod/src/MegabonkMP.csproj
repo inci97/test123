@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.752" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.Unity.Common" Version="6.0.0-be.752" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.Unity.UI" Version="6.0.0-be.752" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
     <Reference Include="UnityEngine.UI" HintPath="$(NuGetPackageRoot)bepinex.unity.common\6.0.0-be.752\lib\netstandard2.0\UnityEngine.UI.dll" />
   </ItemGroup>
@@ -79,6 +80,7 @@
   <!-- Fallback: BepInEx Unity stubs when game path not available -->
   <ItemGroup Condition="'$(MEGABONK_PATH)' == '' OR !Exists('$(MEGABONK_PATH)\BepInEx\interop')">
     <PackageReference Include="BepInEx.Unity" Version="6.0.0-pre.1" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.Unity.UI" Version="6.0.0-be.752" IncludeAssets="compile" />
     <Reference Include="UnityEngine.UI" HintPath="$(NuGetPackageRoot)bepinex.unity.common\6.0.0-be.752\lib\netstandard2.0\UnityEngine.UI.dll" />
   </ItemGroup>
 
