@@ -165,7 +165,8 @@ namespace MegabonkMP.UI
             GUILayout.BeginHorizontal();
             for (int i = 0; i < _tabs.Length; i++)
             {
-                if (GUILayout.Toggle(_currentTab == i, _tabs[i], _buttonStyle, GUILayout.Height(30)))
+                bool isSelected = _currentTab == i;
+                if (GUILayout.Button(isSelected ? $"[{_tabs[i]}]" : _tabs[i]))
                 {
                     _currentTab = i;
                 }
@@ -302,8 +303,8 @@ namespace MegabonkMP.UI
                     GUILayout.Label("═══ Host Controls ═══", _headerStyle);
                     
                     GUILayout.BeginHorizontal();
-                    _friendlyFire = GUILayout.Toggle(_friendlyFire, " Friendly Fire", _labelStyle);
-                    _sharedLoot = GUILayout.Toggle(_sharedLoot, " Shared Loot", _labelStyle);
+                    _friendlyFire = GUILayout.Toggle(_friendlyFire, " Friendly Fire");
+                    _sharedLoot = GUILayout.Toggle(_sharedLoot, " Shared Loot");
                     GUILayout.EndHorizontal();
                     
                     GUILayout.Space(5);
@@ -329,9 +330,9 @@ namespace MegabonkMP.UI
         {
             GUILayout.Label("═══ Display Settings ═══", _headerStyle);
             
-            _showNameplates = GUILayout.Toggle(_showNameplates, " Show Player Nameplates", _labelStyle);
-            _showHealth = GUILayout.Toggle(_showHealth, " Show Health Bars", _labelStyle);
-            _showNetworkStats = GUILayout.Toggle(_showNetworkStats, " Show Network Stats (F3)", _labelStyle);
+            _showNameplates = GUILayout.Toggle(_showNameplates, " Show Player Nameplates");
+            _showHealth = GUILayout.Toggle(_showHealth, " Show Health Bars");
+            _showNetworkStats = GUILayout.Toggle(_showNetworkStats, " Show Network Stats (F3)");
             
             GUILayout.Space(15);
             
