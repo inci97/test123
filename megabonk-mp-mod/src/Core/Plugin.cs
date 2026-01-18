@@ -180,7 +180,6 @@ namespace MegabonkMP.Core
             }
         }
     }
-    }
     
     /// <summary>
     /// Plugin metadata constants.
