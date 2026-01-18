@@ -1,0 +1,60 @@
+name: CI Watch and Report
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  build-and-report:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Add BepInEx NuGet source
+        run: |
+          dotnet nuget add source https://nuget.bepinex.dev/v3/index.json -n BepInEx || true
+
+      - name: Build mod
+        id: build
+        continue-on-error: true
+        working-directory: megabonk-mp-mod/src
+        run: |
+          dotnet restore MegabonkMP.csproj > build.log 2>&1 || true
+          dotnet build MegabonkMP.csproj -c Release --no-restore >> build.log 2>&1 || true
+
+      - name: Upload build log
+        if: steps.build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: megabonk-mp-mod/src/build.log
+
+      - name: Create issue with build excerpt
+        if: steps.build.outcome == 'failure'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'megabonk-mp-mod/src/build.log';
+            let excerpt = '';
+            if (fs.existsSync(path)) {
+              const lines = fs.readFileSync(path, 'utf8').split(/\r?\n/);
+              excerpt = lines.slice(-300).join('\n');
+            } else {
+              excerpt = 'Build log not found.';
+            }
+            await github.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CI: Build failed for ${context.sha}`,
+              body: `The automated build failed on commit ${context.sha} by ${context.actor}.\n\nLast 300 lines of build log:\n\n\n\n---\n\n\n\n\n\n${'```'}\n${excerpt}\n${'```'}`
+            });
