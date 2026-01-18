@@ -1,0 +1,9 @@
+{
+  "name": "MegabonkMP",
+  "version_number": "0.1.0",
+  "website_url": "https://github.com/yourusername/megabonk-mp-mod",
+  "description": "Multiplayer mod for Megabonk - Play with up to 6 players in co-op!",
+  "dependencies": [
+    "BepInEx-BepInExPack_IL2CPP-6.0.0"
+  ]
+}
