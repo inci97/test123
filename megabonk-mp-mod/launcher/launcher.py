@@ -721,12 +721,6 @@ class LauncherApp:
         def after_build():
             self.install_mod()
         self.build_mod(after_build=after_build)
-    
-    def build_and_install_mod(self):
-        """Build the mod and install it in one go."""
-        def after_build():
-            self.install_mod()
-        self.build_mod(after_build=after_build)
 
     def build_mod(self, after_build=None):
         """Build the mod from source. Calls after_build() on success if provided."""
@@ -739,51 +733,104 @@ class LauncherApp:
         def do_build():
             mod_source = self.get_mod_source_dir()
             
-            # Mod destination
-            mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
-            
             try:
-                os.makedirs(mod_dest, exist_ok=True)
-                
-                # First check if DLL was already built to the destination
-                dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
-                if os.path.exists(dest_dll):
-                    self.log(f"Mod DLL already present at destination: {dest_dll}")
-                    messagebox.showinfo("Success", f"Mod is already installed!\n\n{dest_dll}")
-                    self.check_installation_status()
+                # Build the mod
+                csproj_path = os.path.join(mod_source, "MegabonkMP.csproj")
+                if not os.path.exists(csproj_path):
+                    self.log("MegabonkMP.csproj not found. Downloading source first.", "WARNING")
+                    if messagebox.askyesno("Download Required", 
+                        "Mod source not found.\n\nWould you like to download it now?"):
+                        self.download_source(lambda: self.build_mod(after_build))
                     return
                 
-                # Look for compiled DLL in build output locations
-                dll_paths = [
-                    os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
-                    os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
-                    os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
-                    os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
-                ]
+                self.log("Building mod...")
+                self.status_var.set("Building mod...")
                 
-                dll_found = None
-                for dll_path in dll_paths:
-                    if os.path.exists(dll_path):
-                        dll_found = dll_path
-                        break
+                # Run dotnet build
+                import subprocess
+                result = subprocess.run(
+                    ["dotnet", "build", "-c", "Release", "--verbosity", "minimal"],
+                    cwd=mod_source,
+                    capture_output=True,
+                    text=True
+                )
                 
-                if dll_found:
-                    dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
-                    shutil.copy2(dll_found, dest_dll)
-                    self.log(f"Mod DLL copied from {dll_found} to {dest_dll}")
-                    messagebox.showinfo("Success", f"Mod installed successfully!\n\n{dest_dll}")
+                if result.returncode == 0:
+                    self.log("Mod built successfully")
+                    self.status_var.set("Mod built successfully")
+                    messagebox.showinfo("Success", "Mod built successfully!")
+                    
+                    if after_build:
+                        after_build()
                 else:
-                    self.log("Mod DLL not found. Please build the mod first.", "WARNING")
-                    if messagebox.askyesno("Build Required", 
-                        "Mod DLL not found.\n\nWould you like to build the mod now?"):
-                        self.build_mod()
-                    return
-                
-                self.check_installation_status()
-                
+                    self.log(f"Build failed: {result.stderr}", "ERROR")
+                    self.status_var.set("Build failed")
+                    messagebox.showerror("Build Failed", f"Failed to build mod:\n\n{result.stderr}")
+                    
             except Exception as e:
-                self.log(f"Failed to install mod: {e}", "ERROR")
-                messagebox.showerror("Error", f"Failed to install mod:\n{e}")
+                self.log(f"Build failed: {e}", "ERROR")
+                self.status_var.set("Build failed")
+                messagebox.showerror("Build Failed", f"Failed to build mod:\n{e}")
+    
+    def install_mod(self):
+        """Install a pre-built mod DLL to the game directory."""
+        game_path = self.game_path_var.get()
+        
+        if not game_path or not os.path.exists(game_path):
+            messagebox.showerror("Error", "Please set a valid game path first.")
+            return
+        
+        if not self.bepinex_installed.get():
+            messagebox.showerror("Error", "Please install BepInEx first.")
+            return
+        
+        mod_source = self.get_mod_source_dir()
+        
+        # Mod destination
+        mod_dest = os.path.join(game_path, "BepInEx", "plugins", "MegabonkMP")
+        
+        try:
+            os.makedirs(mod_dest, exist_ok=True)
+            
+            # First check if DLL was already built to the destination
+            dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+            if os.path.exists(dest_dll):
+                self.log(f"Mod DLL already present at destination: {dest_dll}")
+                messagebox.showinfo("Success", f"Mod is already installed!\n\n{dest_dll}")
+                self.check_installation_status()
+                return
+            
+            # Look for compiled DLL in build output locations
+            dll_paths = [
+                os.path.join(mod_source, "bin", "Release", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Release", "net6.0", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Debug", "MegabonkMP.dll"),
+                os.path.join(mod_source, "bin", "Debug", "net6.0", "MegabonkMP.dll"),
+            ]
+            
+            dll_found = None
+            for dll_path in dll_paths:
+                if os.path.exists(dll_path):
+                    dll_found = dll_path
+                    break
+            
+            if dll_found:
+                dest_dll = os.path.join(mod_dest, "MegabonkMP.dll")
+                shutil.copy2(dll_found, dest_dll)
+                self.log(f"Mod DLL copied from {dll_found} to {dest_dll}")
+                messagebox.showinfo("Success", f"Mod installed successfully!\n\n{dest_dll}")
+            else:
+                self.log("Mod DLL not found. Please build the mod first.", "WARNING")
+                if messagebox.askyesno("Build Required", 
+                    "Mod DLL not found.\n\nWould you like to build the mod now?"):
+                    self.build_mod()
+                return
+            
+            self.check_installation_status()
+            
+        except Exception as e:
+            self.log(f"Failed to install mod: {e}", "ERROR")
+            messagebox.showerror("Error", f"Failed to install mod:\n{e}")
     
     def apply_server_settings(self):
         """Apply and save server settings to mod config"""
