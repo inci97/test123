@@ -9,6 +9,32 @@ permissions:
   contents: write
 
 jobs:
+  build-mod:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Add BepInEx NuGet source
+        run: |
+          dotnet nuget add source https://nuget.bepinex.dev/v3/index.json -n BepInEx || true
+
+      - name: Restore and build mod
+        working-directory: megabonk-mp-mod/src
+        run: |
+          dotnet restore MegabonkMP.csproj
+          dotnet build MegabonkMP.csproj -c Release --no-restore
+
+      - name: Upload mod artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MegabonkMP_Mod
+          path: megabonk-mp-mod/src/bin/Release/MegabonkMP.dll
+
   build-windows:
     runs-on: windows-latest
     steps:
